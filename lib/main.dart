@@ -28,20 +28,48 @@ class MyHomePage extends StatefulWidget {
 
 String previousColumn = "";
 
+String movingCard = "";
+
 Map<String, List<KanbanCard>> kanbanBoard = {
-  "Column 1": [KanbanCard(cardName: "Card 1"),],
-  "Column 2": [KanbanCard(cardName: "Card 2"),],
-  "Column 3": [KanbanCard(cardName: "Card 3"),],
-  "Column 4": [KanbanCard(cardName: "Card 4"),],
+  "Column 1": [
+    KanbanCard(
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      cardName: "Card 1",
+    ),
+  ],
+  "Column 2": [
+    KanbanCard(
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      cardName: "Card 2",
+    ),
+  ],
+  "Column 3": [
+    KanbanCard(
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      cardName: "Card 3",
+    ),
+  ],
+  "Column 4": [
+    KanbanCard(
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      cardName: "Card 4",
+    ),
+  ],
+  "Column 5": [
+    KanbanCard(
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      cardName: "Card 5",
+    ),
+  ],
 };
 
 class _MyHomePageState extends State<MyHomePage> {
-  DragTarget createDragColumn(String columnName){
+  DragTarget createDragColumn(String columnName) {
     return DragTarget<KanbanCard>(
       builder: (
-          BuildContext context,
-          List<dynamic> accepted,
-          List<dynamic> rejected,
+          context,
+          accepted,
+          rejected,
           ) {
         return Column(
           children: [
@@ -49,25 +77,63 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 75,
               width: 250,
               child: Card(
-                child: ListTile(title: Text(columnName),),
+                child: ListTile(
+                  title: Text(columnName),
+                ),
               ),
             ),
+            (movingCard == columnName && previousColumn != columnName) ? Container(
+              height: 250,
+              width: 250,
+              color: Colors.lightBlue.withOpacity(.1),
+              child: Center(
+                child: Text(
+                  "Moving Here",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ) : Container(),
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                    children:kanbanBoard[columnName]!.toList()
+              child: Container(
+                width: 250,
+                child: ReorderableListView(
+                  scrollDirection: Axis.vertical,
+                  onReorder: (int oldIndex, int newIndex) {
+                    setState(() {
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
+                      final KanbanCard item = kanbanBoard[columnName]!.removeAt(oldIndex);
+                      kanbanBoard[columnName]!.insert(newIndex, item);
+                    });
+                  },
+                  children: kanbanBoard[columnName]!.reversed.toList(),
                 ),
               ),
             )
           ],
         );
       },
+      onWillAccept: (data) {
+        setState(() {
+          movingCard = columnName;
+        });
+        return true;
+      },
       onAccept: (KanbanCard data) {
         setState(() {
-          if(!kanbanBoard[columnName]!.contains(data)){
+          var isThere = kanbanBoard[columnName]!
+              .firstWhere((element) => element.cardName == data.cardName,
+              orElse: () => KanbanCard(
+                key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+                cardName: 'NOT FOUND',
+              ));
+          if (isThere.cardName == 'NOT FOUND') {
             kanbanBoard[columnName]!.add(data);
           }
-          kanbanBoard[previousColumn]!.remove(data);
+          if (columnName != previousColumn)
+            kanbanBoard[previousColumn]
+                ?.removeWhere((element) => element.cardName == data.cardName);
         });
       },
     );
@@ -76,13 +142,17 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        children: [
-          createDragColumn("Column 1"),
-          createDragColumn("Column 2"),
-          createDragColumn("Column 3"),
-          createDragColumn("Column 4"),
-        ],
+      body: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            createDragColumn("Column 1"),
+            createDragColumn("Column 2"),
+            createDragColumn("Column 3"),
+            createDragColumn("Column 4"),
+            createDragColumn("Column 5"),
+          ],
+        ),
       ),
     );
   }
@@ -90,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class KanbanCard extends StatelessWidget {
   const KanbanCard({
-    Key? key,
+    required Key key,
     required this.cardName,
   }) : super(key: key);
 
@@ -99,37 +169,54 @@ class KanbanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Draggable<KanbanCard>(
-        data: KanbanCard(cardName: cardName),
-        child: SizedBox(
-          height: 250,
-          width: 250,
-          child: Card(
-            child: ListTile(title: Text(cardName),),
+      key: key,
+      data: KanbanCard(
+        key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+        cardName: cardName,
+      ),
+      child: SizedBox(
+        height: 250,
+        width: 250,
+        child: Card(
+          child: ListTile(
+            title: Text(cardName),
           ),
         ),
-        feedback: SizedBox(
-          height: 250,
-          width: 250,
-          child: Card(
-            child: ListTile(title: Text(cardName),),
+      ),
+      feedback: SizedBox(
+        height: 250,
+        width: 250,
+        child: Card(
+          child: ListTile(
+            title: Text(cardName),
           ),
         ),
-        childWhenDragging: Container(
-          height: 250,
-          width: 250,
-          color: Colors.grey.shade300,
-          child: Center(
-            child: Text(cardName, style: TextStyle(color: Colors.white),),
+      ),
+      childWhenDragging: Container(
+        height: 250,
+        width: 250,
+        color: Colors.grey.withOpacity(.1),
+        child: Center(
+          child: Text(
+            cardName,
+            style: TextStyle(color: Colors.white),
           ),
         ),
-        onDragStarted: (){
-          for(String key in kanbanBoard.keys){
-            if(kanbanBoard[key]!.contains(KanbanCard(key: this.key, cardName: this.cardName))){
-              previousColumn = key;
-              break;
-            }
-          }
-        },
+      ),
+      onDragStarted: () {
+        kanbanBoard.forEach((localKey, value) {
+          var contains =
+          value.firstWhere((element) => element.cardName == cardName,
+              orElse: () => KanbanCard(
+                key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+                cardName: "NOT FOUND",
+              ));
+          if (contains.cardName != 'NOT FOUND') previousColumn = localKey;
+        });
+      },
+      onDragCompleted: (){
+        movingCard = "";
+      },
     );
   }
 }
