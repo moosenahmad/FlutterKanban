@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'components/KanbanCard.dart';
+import 'components/KanbanColumnTitle.dart';
+import 'components/KanbanMovingCard.dart';
+import 'globals/GlobalVariables.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -26,43 +31,6 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-String previousColumn = "";
-
-String movingCard = "";
-
-Map<String, List<KanbanCard>> kanbanBoard = {
-  "Column 1": [
-    KanbanCard(
-      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-      cardName: "Card 1",
-    ),
-  ],
-  "Column 2": [
-    KanbanCard(
-      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-      cardName: "Card 2",
-    ),
-  ],
-  "Column 3": [
-    KanbanCard(
-      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-      cardName: "Card 3",
-    ),
-  ],
-  "Column 4": [
-    KanbanCard(
-      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-      cardName: "Card 4",
-    ),
-  ],
-  "Column 5": [
-    KanbanCard(
-      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-      cardName: "Card 5",
-    ),
-  ],
-};
-
 class _MyHomePageState extends State<MyHomePage> {
   DragTarget createDragColumn(String columnName) {
     return DragTarget<KanbanCard>(
@@ -71,28 +39,11 @@ class _MyHomePageState extends State<MyHomePage> {
           accepted,
           rejected,
           ) {
+        bool isInCurrentColumn = (movingCard == columnName && previousColumn != columnName);
         return Column(
           children: [
-            SizedBox(
-              height: 75,
-              width: 250,
-              child: Card(
-                child: ListTile(
-                  title: Text(columnName),
-                ),
-              ),
-            ),
-            (movingCard == columnName && previousColumn != columnName) ? Container(
-              height: 250,
-              width: 250,
-              color: Colors.lightBlue.withOpacity(.1),
-              child: Center(
-                child: Text(
-                  "Moving Here",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ) : Container(),
+            KanbanColumnTitle(columnTitle: columnName),
+            isInCurrentColumn ? KanbanMovingCard() : Container(),
             Expanded(
               child: Container(
                 width: 250,
@@ -154,69 +105,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class KanbanCard extends StatelessWidget {
-  const KanbanCard({
-    required Key key,
-    required this.cardName,
-  }) : super(key: key);
-
-  final String cardName;
-
-  @override
-  Widget build(BuildContext context) {
-    return Draggable<KanbanCard>(
-      key: key,
-      data: KanbanCard(
-        key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-        cardName: cardName,
-      ),
-      child: SizedBox(
-        height: 250,
-        width: 250,
-        child: Card(
-          child: ListTile(
-            title: Text(cardName),
-          ),
-        ),
-      ),
-      feedback: SizedBox(
-        height: 250,
-        width: 250,
-        child: Card(
-          child: ListTile(
-            title: Text(cardName),
-          ),
-        ),
-      ),
-      childWhenDragging: Container(
-        height: 250,
-        width: 250,
-        color: Colors.grey.withOpacity(.1),
-        child: Center(
-          child: Text(
-            cardName,
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      ),
-      onDragStarted: () {
-        kanbanBoard.forEach((localKey, value) {
-          var contains =
-          value.firstWhere((element) => element.cardName == cardName,
-              orElse: () => KanbanCard(
-                key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-                cardName: "NOT FOUND",
-              ));
-          if (contains.cardName != 'NOT FOUND') previousColumn = localKey;
-        });
-      },
-      onDragCompleted: (){
-        movingCard = "";
-      },
     );
   }
 }
