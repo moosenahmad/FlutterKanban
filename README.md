@@ -2,8 +2,8 @@
 
 Very simple Flutter Kanban Board
 
-## Getting Started
+## Preview
 
 <p align="center">
-  <img src="https://github.com/moosenahmad/FlutterKanban.git/assets/flutterkanban.gif" width="350" title="Flutter Kanban Preview">
+  <img src="https://github.com/moosenahmad/FlutterKanban/blob/master/assets/flutterkanban.gif?raw=true" width="350" title="Flutter Kanban Preview">
 </p>
