@@ -1,6 +1,6 @@
-# flutterkanbanboard
+# Flutter Kanban Board
 
-Very simple Flutter Kanban Board
+Very simple Flutter Kanban Board that's created without any additional plugins or dependencies and using only the core Flutter widgets.
 
 ## Preview
 
